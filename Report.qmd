@@ -26,6 +26,9 @@ The dataset consists of 27,455 training images and 7,172 test images, each label
 File: pre_trained.ipynb
 
 
+resnet18_sign_classifier.pth
+
+
 Pretrained models were utilized for both the hand detection and sign classification components of the project.
 
 
@@ -80,6 +83,9 @@ Evaluation on the test set resulted in a test accuracy of 95.37%, with an averag
 # Scratch
 
 File: scratch.ipynb
+
+
+resnet18_sign_classifier_scratch.pth
 
 
 I also included a notebook where both the hand detection and sign language classification components were trained entirely from scratch.

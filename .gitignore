@@ -7,3 +7,4 @@ yolov8n.pt
 datasets
 Report_files
 images
+resnet18_asl_from_scratch.pth
