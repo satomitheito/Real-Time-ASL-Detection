@@ -10,7 +10,7 @@ st.title("Real-time ASL Detection App")
 
 #Load YOLO hand detector
 hand_model = YOLO("runs/detect/hand-detection13/weights/best.pt")
-#hand_model = YOLO("runs/detect/hand-detector-scratch6-continued7/weights/best.pt")
+#hand_model = YOLO("runs/detect/hand-detector-scratch9-continued/weights/best.pt")
 
 #Load ResNet sign classifier
 sign_model = models.resnet18()

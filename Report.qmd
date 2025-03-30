@@ -145,6 +145,9 @@ The test accuracy for the scratch-trained ResNet18 was 94.80%, slightly below th
 
 # Streamlit Deployment
 
+File: streamlit.py
+
+
 The application processes video frames from the user's webcam in real time using the following pipeline:
 
 - **Hand Detection**: A YOLOv8 model trained from scratch is used to detect hands in each frame. The model outputs bounding box coordinates around the detected hand.
