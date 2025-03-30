@@ -1,0 +1,6 @@
+path: /Users/satomi/Documents/GitHub/mini-project-3-yay/hand_detect
+train: train/images
+val: test/images
+
+nc: 1
+names: ['hand']

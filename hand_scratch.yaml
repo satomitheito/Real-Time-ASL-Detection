@@ -1,0 +1,12 @@
+# hand_detection.yaml
+path: hand_dataset
+train: train/images
+val: test/images
+
+# Custom label paths to use the yolo directory
+train_annotations: labels/YOLO
+val_annotations: labels/YOLO
+
+# Classes
+names:
+  0: hand

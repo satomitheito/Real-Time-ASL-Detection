@@ -1,0 +1,12 @@
+# Create YAML file for YOLOv5
+with open('hand_yolov5.yaml', 'w') as f:
+    f.write("""
+# YOLOv5 dataset configuration
+path: hand_dataset  # dataset root dir
+train: train/images  # train images (relative to 'path')
+val: test/images  # validation images (relative to 'path')
+
+# Classes
+nc: 1  # number of classes
+names: ['hand']  # class names
+    """)
