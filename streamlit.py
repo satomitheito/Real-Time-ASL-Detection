@@ -16,7 +16,7 @@ hand_model = YOLO("runs/detect/hand-detection13/weights/best.pt")
 sign_model = models.resnet18()
 sign_model.fc = torch.nn.Linear(sign_model.fc.in_features, 24)
 sign_model.load_state_dict(torch.load("resnet18_sign_classifier.pth", map_location="mps"))
-#sign_model.load_state_dict(torch.load("resnet18_asl_from_scratch.pth", map_location="mps"))
+#sign_model.load_state_dict(torch.load("resnet18_sign_classifier_scratch.pth", map_location="mps"))
 sign_model.eval()
 
 #Preprocessing transform
