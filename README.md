@@ -51,8 +51,6 @@ model.train(
 
 The pretrained model provided a structure for identifying hand regions in varied lighting, orientation, and background conditions. By initializing with pretrained weights, the model required fewer epochs than from scratch.
 
-![Photo Example](runs/detect/predict/VOC2007_12.jpg)
-
 ### Sign Language Classification
 For the classification of static ASL signs, a ResNet18 model pretrained on ImageNet was employed. The final classification layer was replaced to output 24 classes corresponding to ASL letters A–Y. Grayscale 28×28 images from the Sign Language MNIST dataset were transformed to 3-channel 224×224 format to match the expected ResNet input.
 
@@ -74,11 +72,9 @@ transform = transforms.Compose([
 
 The model was trained over 10 epochs using the Adam optimizer and CrossEntropyLoss. 
 
-![Train Results](images/train_p.png)
 
 Evaluation on the test set resulted in a test accuracy of 95.37%, with an average inference time of 0.13 milliseconds per image, demonstrating the efficiency of the model in real-time settings.
 
-![Test Results](images/test_p.png)
 
 # Scratch
 
@@ -125,8 +121,6 @@ model.train(
 )
 ```
 
-![Photo Example](runs/detect/predict2/VOC2007_24.jpg)
-
 ### Sign Language Classification
 For static ASL sign classification, a ResNet18 model was initialized with random weights (weights=None). The same preprocessing pipeline was used as in the pretrained version.
 
@@ -137,11 +131,7 @@ model.fc = nn.Linear(model.fc.in_features, 24)
 
 Training was performed over 10 epochs using the Adam optimizer and cross-entropy loss.
 
-![Train Results](images/train_s.png)
-
 The test accuracy for the scratch-trained ResNet18 was 94.80%, slightly below the pretrained version’s 95.37%.
-
-![Test Results](images/test_s.png)
 
 # Streamlit Deployment
 
@@ -155,7 +145,5 @@ The application processes video frames from the user's webcam in real time using
 - **Preprocessing**: The cropped image is resized to 224×224 pixels and converted to a 3-channel format, matching the input requirements of the ResNet18 classifier.
 - **Sign Classification**: The processed image is passed through a ResNet18 model (either pretrained or trained from scratch) to classify the static ASL sign.
 - **Display**: The predicted sign and its confidence score are displayed in the app, with bounding boxes drawn over the original video feed.
-
-![Streamlit App](images/me.png)
 
 
