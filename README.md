@@ -1,85 +1,161 @@
-# Mini-project-3: Real-time Sign Language Detection Application
+---
+title: Real Time ASL Detector 
+author: Satomi Ito
+format: html
+---
+# Dataset
 
-**Goal**: Develop a real-time application that detects and interprets sign language digits using a combination of object detection and classification models. The project will involve building a pipeline that detects hands in video frames and classifies the detected hand gestures into sign language digits.
+File: data_import.ipynb
 
-## Project Summary
+### Hand Detection 
 
-### Group Selection
+The hand detection portion of this project uses the [Kaggle Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format), which consists of 2,061 labeled images featuring hands in various positions, sizes, and orientations. The dataset includes annotations in both YOLO and VOC formats. The bounding boxes provided identify the location of hands within each image.
 
-You can work alone if you want but recommended to work as a group
+The dataset is split into 1,551 training images and 510 test images. Images are diverse in terms of background, lighting conditions, and hand positioning. The annotations are single-class, focusing solely on detecting hands.
 
-- **Form a group of 3 people**
-  - (Optional): Select a group leader
-  - Plan out your project in a systematic way 
-  - Break the project into stages and allocate sub-components to individuals 
-  - Feel free to use Cursor, or similar, for coding acceleration 
-  - Use Git, branches, etc to collaborate professionally, and efficiently 
 
-### Reading & Research:
+### Sign Language MNIST
 
-To learn more about the technologies involved, see the following resources:
+For the sign classification task, the project uses the [Sign Language MNIST datase](https://www.kaggle.com/datasets/datamunge/sign-language-mnist). This dataset is a replacement for the original MNIST digits dataset, adapted for American Sign Language letter recognition. It contains 28x28 grayscale images of hand gestures representing the ASL alphabet (excluding the letters J and Z, which involve motion and cannot be captured in a static frame).
 
-- [YOLO: Real-Time Object Detection](https://pjreddie.com/darknet/yolo/)
-- [Vision Transformers](https://arxiv.org/abs/2010.11929)
-- [Sign Language MNIST Dataset](https://www.kaggle.com/datasets/datamunge/sign-language-mnist)
+The dataset consists of 27,455 training images and 7,172 test images, each labeled with one of 24 classes corresponding to ASL letters A–Y. The original images were collected from multiple users and backgrounds, then processed with grayscale conversion, cropping, and augmentation techniques such as rotation, contrast adjustment, and pixelation.
 
-### Data Acquisition:
 
-- Start simple!!! Use the provided datasets to debug and develop your pipeline. Once the project is working, you can apply a similar workflow to a different task with another dataset if desired.
+# Pretrained 
 
-`Provided Data`
+File: pre_trained.ipynb
 
-- Hand Detection Dataset: [Kaggle Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format)
-- Sign Language Dataset: [Sign Language MNIST](https://www.kaggle.com/datasets/datamunge/sign-language-mnist)
 
-`Exploration:` 
+resnet18_sign_classifier.pth
 
-Consider applying the workflow to a different task with a different dataset if you wish to explore beyond the initial scope. The theme is to perform real-time object detection followed by another interesting task. For those interested in extending the project further, you could explore using advanced techniques such as vision transformers to enhance the detection and classification capabilities.
 
-### Preprocessing:
+Pretrained models were utilized for both the hand detection and sign classification components of the project.
 
-- **Video Frames:** Extract frames from video input and preprocess them for hand detection.
-- **Images:** Standardize image sizes (e.g., resize to 224×224) and perform necessary augmentations.
-- As usual, have a training/test/validation split.
 
-### Model Training:
+### Hand Detection 
 
-- **Hand Detection:** Train a YOLO model to detect hands in video frames.
-- **Sign Language Classification:** Train models (e.g., ResNet architectures) to classify hand gestures into sign language digits.
-- Experiment with both transfer learning (pretrained models) and training from scratch where possible.
-- Compare performance metrics (accuracy, loss, inference time) across models and modalities.
-- Tune the models as needed for best results.
+For the hand detection task, the project used Ultralytics' YOLOv8n model with pretrained weights (`yolov8n.pt`). The model was fine-tuned using YOLO-format annotations.
 
-### Deployment:
+```python
+from ultralytics import YOLO
+model = YOLO("yolov8n.pt")
+model.train(
+    data="hand.yaml",
+    epochs=20,
+    imgsz=640,
+    batch=16,
+    name="hand-detection",
+    device="mps"
+)
+```
 
-- Create an interactive application (e.g., using Streamlit) that allows users to:
-  - Upload a video or use a webcam to detect and classify sign language gestures in real-time.
-  - Display both detection and classification results with model confidence scores.
+The pretrained model provided a structure for identifying hand regions in varied lighting, orientation, and background conditions. By initializing with pretrained weights, the model required fewer epochs than from scratch.
 
-### Documentation & Submission:
+![Photo Example](runs/detect/predict/VOC2007_12.jpg)
 
-- Submit to the code repository with clear documentation and comments.
-- Provide a brief report summarizing your approach, data preprocessing steps, model comparisons, challenges encountered, and final evaluation metrics.
-* After two weeks, you will need to submit the following:
-  * A link to your GitHub code repository 
-  * Make a slide deck (or jupyter notebook), to describe what you did and showcase your results (submit PDF or HTML to Canvas)
-  * Do a recording where you walk through and describe your results and presentation (10-20 minutes) (submit the recording to Canvas presentation recording)
-  * At the end of the mini-project, a group will be selected at random to do their presentation "live" in front of class (to fuel discussion)
+### Sign Language Classification
+For the classification of static ASL signs, a ResNet18 model pretrained on ImageNet was employed. The final classification layer was replaced to output 24 classes corresponding to ASL letters A–Y. Grayscale 28×28 images from the Sign Language MNIST dataset were transformed to 3-channel 224×224 format to match the expected ResNet input.
 
-## Appendix
+```python
+model = models.resnet18(weights="IMAGENET1K_V1")
+model.fc = nn.Linear(model.fc.in_features, 24)
+```
 
-### Dataset Information 
+Preprocessing included resizing, grayscale-to-RGB expansion, normalization, and conversion to tensor format. 
 
-More information on the provided datasets:
+```python
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.Grayscale(num_output_channels=3),
+    transforms.ToTensor(),
+    transforms.Normalize([0.5]*3, [0.5]*3)
+])
+```
 
-#### Hand Detection
+The model was trained over 10 epochs using the Adam optimizer and CrossEntropyLoss. 
 
-The dataset includes images annotated for hand detection, suitable for training YOLO models.
+![Train Results](images/train_p.png)
 
-#### Sign Language
+Evaluation on the test set resulted in a test accuracy of 95.37%, with an average inference time of 0.13 milliseconds per image, demonstrating the efficiency of the model in real-time settings.
 
-The Sign Language MNIST dataset includes images of hand gestures representing digits 0-9 in American Sign Language.
+![Test Results](images/test_p.png)
 
-**Inspiration**: How accurately can we interpret sign language gestures in real-time using video input?
+# Scratch
 
-**Source**: [Kaggle Sign Language MNIST](https://www.kaggle.com/datasets/datamunge/sign-language-mnist)
+File: scratch.ipynb
+
+
+resnet18_sign_classifier_scratch.pth
+
+
+I also included a notebook where both the hand detection and sign language classification components were trained entirely from scratch.
+
+### Hand Detection 
+
+For hand detection, a YOLOv8n model was trained from scratch. Instead of using pretrained weights, the model was initialized with random weights using the YOLOv8n architecture configuration. 
+
+```python
+model = YOLO('yolov8n.yaml') 
+
+model.train(
+     data="hand.yaml",
+     epochs=20,
+     imgsz=640,
+     batch=16,
+     name="hand-detector-scratch",  
+     save=True,                  
+     save_period=1,            
+     patience=20,              
+     device = "mps"
+    )
+```
+
+Initially, the model was trained for 20 epochs. While it learned basic hand localization, further evaluation, the streamlit deployment, suggested that 20 epochs were not sufficient, especially when trained from scratch. Therefore, training was resumed from the final weights of the first run (last.pt) for an additional 40 epochs, bringing the total to 60 epochs.
+
+```python
+model = YOLO("runs/detect/hand-detector-scratch9/weights/last.pt")
+
+model.train(
+    data="hand.yaml",
+    epochs=40,                
+    batch=16,
+    imgsz=640,
+    name="hand-detector-scratch9-continued",
+    device="mps"
+)
+```
+
+![Photo Example](runs/detect/predict2/VOC2007_24.jpg)
+
+### Sign Language Classification
+For static ASL sign classification, a ResNet18 model was initialized with random weights (weights=None). The same preprocessing pipeline was used as in the pretrained version.
+
+```python
+model = models.resnet18(weights=None)
+model.fc = nn.Linear(model.fc.in_features, 24)
+```
+
+Training was performed over 10 epochs using the Adam optimizer and cross-entropy loss.
+
+![Train Results](images/train_s.png)
+
+The test accuracy for the scratch-trained ResNet18 was 94.80%, slightly below the pretrained version’s 95.37%.
+
+![Test Results](images/test_s.png)
+
+# Streamlit Deployment
+
+File: streamlit.py
+
+
+The application processes video frames from the user's webcam in real time using the following pipeline:
+
+- **Hand Detection**: A YOLOv8 model trained from scratch is used to detect hands in each frame. The model outputs bounding box coordinates around the detected hand.
+- **Cropping**: The hand region is cropped from the frame using the bounding box, and optionally expanded for better context.
+- **Preprocessing**: The cropped image is resized to 224×224 pixels and converted to a 3-channel format, matching the input requirements of the ResNet18 classifier.
+- **Sign Classification**: The processed image is passed through a ResNet18 model (either pretrained or trained from scratch) to classify the static ASL sign.
+- **Display**: The predicted sign and its confidence score are displayed in the app, with bounding boxes drawn over the original video feed.
+
+![Streamlit App](images/me.png)
+
+
